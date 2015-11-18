@@ -47,7 +47,7 @@ var fontAssets = {
 }
 
 var santaProperties = {
-    startX: gameProperties.screenWidth,
+    startX: 0,
     startY: gameProperties.screenHeight * 0.2,
 };
 
@@ -67,7 +67,9 @@ var presentProperties = {
 var presentList = [];
 
 var gameState = function(game){
-    this.santaSprite;  
+    this.gameStarted = false;
+
+    this.santaSprite;      
 
     this.key_fire;
     this.key_fire2;
@@ -92,7 +94,7 @@ var gameState = function(game){
     this.message_r2;
     this.message_r3;
 
-    this.lives = 4;
+    this.lives = 3;
     this.level = 1;    
     this.choices = gameProperties.baseChoices;
     this.speed = gameProperties.baseSpeed;
@@ -136,7 +138,9 @@ gameState.prototype = {
 
     update: function () {
         this.checkPlayerInput();
-        this.autoMove();
+        if (this.gameStarted) {
+            this.autoMove();
+        }
         this.passScreen(this.santaSprite);
 
         game.physics.arcade.overlap(this.houseSprite, this.presentGroup, this.receivePresent, null, this);
@@ -148,6 +152,7 @@ gameState.prototype = {
         background = game.add.tileSprite(0, 0, 1024, 576, "background");
         this.santaSprite = game.add.sprite(santaProperties.startX, santaProperties.startY, graphicAssets.santa.name);        
         this.houseSprite = game.add.sprite(houseProperties.startX, houseProperties.startY, graphicAssets.house.name);
+        this.moodSprite = game.add.sprite(this.houseSprite.x - 30, this.houseSprite.y + 30, graphicAssets.face_sad.name);
 
         this.bubbleSprite = game.add.sprite(720, gameProperties.screenHeight - 240, graphicAssets.bubble.name);
         this.wishSprite = game.add.sprite(750, gameProperties.screenHeight - 210, presentList[1].name);
@@ -158,8 +163,8 @@ gameState.prototype = {
 
         this.message_lives = game.add.text(20, 10, '', fontAssets.bigFontStyle);
         this.message1 = game.add.text(20, 40, '', fontAssets.bigFontStyle);
-        this.message2 = game.add.text(330, 10, "Press NUMBER BUTTON to select present by people's wish", fontAssets.defaultFontStyle);
-        this.message3 = game.add.text(380, 30, 'Press ENTER or SPACE to drop present', fontAssets.defaultFontStyle);
+        this.message2 = game.add.text(330, 10, "Press ENTER or SPACE to start game", fontAssets.defaultFontStyle);
+        this.message3 = game.add.text(380, 30, '', fontAssets.defaultFontStyle);
 
         this.message_r1 = game.add.text(gameProperties.screenWidth - 150, 10, '', fontAssets.defaultFontStyle);
         this.message_r2 = game.add.text(gameProperties.screenWidth - 150, 40, '', fontAssets.defaultFontStyle);
@@ -174,7 +179,7 @@ gameState.prototype = {
 
         this.presentGroup.enableBody = true;
         this.presentGroup.physicsBodyType = Phaser.Physics.ARCADE;
-        this.presentGroup.createMultiple(1, graphicAssets.present_pizza.name);        
+        //this.presentGroup.createMultiple(1, graphicAssets.present_pizza.name);        
         this.presentGroup.setAll('anchor.x', 0.5);
         this.presentGroup.setAll('anchor.y', 0.5);
         this.presentGroup.setAll('lifespan', presentProperties.lifeSpan);
@@ -182,7 +187,7 @@ gameState.prototype = {
         game.physics.enable(this.houseSprite, Phaser.Physics.ARCADE);
     },
 
-    initKeyboard: function () {        
+    initKeyboard: function () {                
         this.key_fire = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         this.key_fire2 = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
 
@@ -197,9 +202,13 @@ gameState.prototype = {
         this.key_present9 = game.input.keyboard.addKey(Phaser.Keyboard.NINE);
     },
 
-    checkPlayerInput: function () {        
-        if (this.key_fire.isDown || this.key_fire2.isDown) {
-            this.drop();            
+    checkPlayerInput: function () {
+        if (this.key_fire.isDown || this.key_fire2.isDown || game.input.activePointer.isDown) {
+            if (this.gameStarted) {
+                this.drop();                
+            } else {
+                this.gameStarted = true;
+            }
         }
 
         for (var i = 1; i <= 9; i++) {
@@ -215,7 +224,11 @@ gameState.prototype = {
     },
 
     updateGameStats: function () {
-        this.message1.text = 'Level: ' + this.level;        
+        this.message1.text = 'Level: ' + this.level;
+        if (this.gameStarted) {
+            this.message2.text = "Press NUMBER BUTTON to select present by people's wish";
+            this.message3.text = 'Press ENTER or SPACE to drop present';
+        }
 
         this.movementTime = gameProperties.distance / this.speed;
 
@@ -267,13 +280,12 @@ gameState.prototype = {
     receivePresent: function (house, present) {
         present.kill();
         this.moodSprite.kill();
-        this.santaSprite.frameName = graphicAssets.present_pizza.URL;
         // if receive the right present
         if (this.selectedPresent == this.wish) {
             this.presentReceived = true;
             this.moodSprite = game.add.sprite(this.houseSprite.x - 30, this.houseSprite.y + 30, graphicAssets.face_happy.name);
         } else {
-            this.moodSprite = game.add.sprite(this.houseSprite.x - 30, this.houseSprite.y + 30, graphicAssets.face_sad.name);            
+            this.moodSprite = game.add.sprite(this.houseSprite.x - 30, this.houseSprite.y + 30, graphicAssets.face_sad.name);
         }
     },
 
