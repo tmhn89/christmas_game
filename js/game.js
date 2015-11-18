@@ -6,8 +6,8 @@ var gameProperties = {
     baseSpeed: 200,
     baseChoices: 2,
     raiseChoicesStep: 7,
-    baseThroughput: 1,
-    throughputStep: 0.07
+    //baseThroughput: 1,
+    throughputStep: 0.05
 };
 
 var states = {
@@ -93,11 +93,11 @@ var gameState = function(game){
     this.message_r3;
 
     this.lives = 4;
-    this.level = 1;
-    this.throughput = gameProperties.baseThroughput;
+    this.level = 1;    
     this.choices = gameProperties.baseChoices;
     this.speed = gameProperties.baseSpeed;
-    this.movementTime = 1;
+    this.movementTime = gameProperties.distance / gameProperties.baseSpeed;
+    this.throughput = Math.log2(this.choices + 1) / this.movementTime;
 
     this.wish = 1;
     this.wishSprite;
