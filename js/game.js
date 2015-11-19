@@ -3,7 +3,7 @@ var gameProperties = {
     screenHeight: 576,
     // distance between house & santa claus' starting point
     distance: 581,
-    baseSpeed: 200,
+    baseSpeed: 250,
     baseChoices: 2,
     raiseChoicesStep: 7,
     //baseThroughput: 1,
